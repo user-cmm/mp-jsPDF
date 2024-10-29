@@ -66,7 +66,7 @@ const umd = {
   plugins: [
     resolve(),
     commonjs(),
-    RollupPluginPreprocess({ context: { MODULE_FORMAT: "umd" } }),
+    RollupPluginPreprocess({ context: { MODULE_FORMAT: "umd", WECHAT: "" } }),
     replaceVersion(),
     babel({ babelHelpers: "bundled", configFile: "./.babelrc.json" }),
     licenseBanner()
@@ -94,7 +94,7 @@ const es = {
   external: externals,
   plugins: [
     resolve(),
-    RollupPluginPreprocess({ context: { MODULE_FORMAT: "es" } }),
+    RollupPluginPreprocess({ context: { MODULE_FORMAT: "es", WECHAT: "" } }),
     replaceVersion(),
     babel({ babelHelpers: "runtime", configFile: "./.babelrc.esm.json" }),
     licenseBanner()
@@ -123,7 +123,7 @@ const node = {
   external: externals,
   plugins: [
     resolve(),
-    RollupPluginPreprocess({ context: { MODULE_FORMAT: "cjs" } }),
+    RollupPluginPreprocess({ context: { MODULE_FORMAT: "cjs", WECHAT: "" } }),
     replaceVersion(),
     licenseBanner()
   ]
@@ -166,8 +166,32 @@ const esPolyfills = {
   plugins: [licenseBanner()]
 };
 
+const wechat = {
+  input: "src/index.js",
+  output: [
+    {
+      file: "wechat/index.js",
+      format: "umd",
+      name: "jspdf",
+      plugins: [terser({})],
+      exports: "named",
+      sourcemap: false
+    }
+  ],
+  external: umdExternals,
+  plugins: [
+    resolve(),
+    commonjs(),
+    RollupPluginPreprocess({
+      context: { MODULE_FORMAT: "umd", WECHAT: "true" }
+    }),
+    replaceVersion(),
+    babel({ babelHelpers: "bundled", configFile: "./.babelrc.json" }),
+    licenseBanner()
+  ]
+};
 function matchSubmodules(externals) {
   return externals.map(e => new RegExp(`^${e}(?:[/\\\\]|$)`));
 }
 
-export default [umd, es, node, umdPolyfills, esPolyfills];
+export default [wechat];
